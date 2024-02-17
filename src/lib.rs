@@ -10,3 +10,8 @@ pub mod ui;
 /// Terminal user interface.
 pub mod tui;
 
+/// Database Layer.
+pub mod db;
+
+// Model Layer.
+pub mod contact;

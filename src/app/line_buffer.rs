@@ -1,7 +1,7 @@
+use crate::app::{AppResult, TypingMode};
+use crossterm::event::{KeyCode, KeyEvent};
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use crossterm::event::{KeyCode, KeyEvent};
-use crate::app::AppResult;
 
 #[derive(Debug, Default)]
 pub struct LineBuffer {
@@ -9,13 +9,14 @@ pub struct LineBuffer {
     max_buffer: usize,
     display_buffer: usize,
     cursor_position: usize,
+    pub updated: bool,
 }
 
 impl LineBuffer {
-    pub fn handle_key_events(&mut self, event: KeyEvent) -> AppResult<()> {
+    pub fn handle_key_events(&mut self, event: KeyEvent, type_mode: TypingMode) -> AppResult<()> {
         match event.code {
             KeyCode::Char(c) => {
-                self.enter_char(c);
+                self.enter_char(c, type_mode);
             }
             KeyCode::Enter => {
                 self.reset_cursor();
@@ -30,9 +31,7 @@ impl LineBuffer {
             KeyCode::Left => {
                 self.move_cursor_left();
             }
-            KeyCode::Right => {
-                self.move_cursor_right()
-            }
+            KeyCode::Right => self.move_cursor_right(),
             KeyCode::Home => {
                 self.reset_cursor();
             }
@@ -59,10 +58,41 @@ impl LineBuffer {
         self.cursor_position = self.clamp_cursor(cursor_moved_right);
     }
 
-    fn enter_char(&mut self, new_char: char) {
-        self.buffer.insert(self.cursor_position, new_char);
+    fn enter_char(&mut self, new_char: char, type_mode: TypingMode) {
+        match type_mode {
+            TypingMode::Insert => self.insert_char(new_char),
+            TypingMode::Overwrite => self.replace_char(new_char),
+        }
 
         self.move_cursor_right();
+    }
+
+    fn insert_char(&mut self, new_char: char) {
+        self.buffer.insert(self.cursor_position, new_char);
+        self.updated = true;
+    }
+
+    fn replace_char(&mut self, new_char: char) {
+        let is_not_cursor_rightmost = self.cursor_position != self.buffer.len();
+
+        if is_not_cursor_rightmost {
+            self.buffer = self
+                .buffer
+                .chars()
+                .enumerate()
+                .map(|(i, c)| {
+                    if i == self.cursor_position {
+                        new_char
+                    } else {
+                        c
+                    }
+                })
+                .collect()
+        } else {
+            self.buffer.push(new_char);
+        }
+
+        self.updated = true;
     }
 
     fn backspace_char(&mut self) {
@@ -75,6 +105,7 @@ impl LineBuffer {
             let after_char_to_delete = self.buffer.chars().skip(current_index);
             self.buffer = before_char_to_delete.chain(after_char_to_delete).collect();
             self.move_cursor_left();
+            self.updated = true;
         }
     }
 
@@ -86,6 +117,7 @@ impl LineBuffer {
             let before_char_to_delete = self.buffer.chars().take(from_left_to_current_index);
             let after_char_to_delete = self.buffer.chars().skip(current_index + 1);
             self.buffer = before_char_to_delete.chain(after_char_to_delete).collect();
+            self.updated = true;
         }
     }
 
@@ -115,11 +147,11 @@ impl Display for LineBuffer {
 
 
 
-    fn clamp_cursor(&mut self, new_cursor_pos: usize) -> usize {
-        new_cursor_pos.clamp(0, self.input.len())
-    }
+   fn clamp_cursor(&mut self, new_cursor_pos: usize) -> usize {
+       new_cursor_pos.clamp(0, self.input.len())
+   }
 
-    fn reset_cursor(&mut self) {
-        self.cursor_position = 0;
-    }
- */
+   fn reset_cursor(&mut self) {
+       self.cursor_position = 0;
+   }
+*/
