@@ -1,4 +1,5 @@
-use crate::app::{AppResult, TypingMode};
+use crate::app::TypingMode;
+use crate::error::AppResult;
 use crossterm::event::{KeyCode, KeyEvent};
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -13,6 +14,10 @@ pub struct LineBuffer {
 }
 
 impl LineBuffer {
+    pub fn get_value(&self) -> &str {
+        &self.buffer
+    }
+
     pub fn handle_key_events(&mut self, event: KeyEvent, type_mode: TypingMode) -> AppResult<()> {
         match event.code {
             KeyCode::Char(c) => {
@@ -139,19 +144,3 @@ impl Display for LineBuffer {
         write!(f, "{}", self.buffer)
     }
 }
-
-/*
-
-
-
-
-
-
-   fn clamp_cursor(&mut self, new_cursor_pos: usize) -> usize {
-       new_cursor_pos.clamp(0, self.input.len())
-   }
-
-   fn reset_cursor(&mut self) {
-       self.cursor_position = 0;
-   }
-*/

@@ -1,17 +1,9 @@
-/// Application.
 pub mod app;
-
-/// Terminal events handler.
+pub mod config;
+pub mod data_layer;
+pub mod dialog;
+pub mod error;
 pub mod event;
-
-/// Widget renderer.
-pub mod ui;
-
-/// Terminal user interface.
+pub mod line_buffer;
+pub mod renderer;
 pub mod tui;
-
-/// Database Layer.
-pub mod db;
-
-// Model Layer.
-pub mod contact;

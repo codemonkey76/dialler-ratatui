@@ -1,7 +1,8 @@
-use crate::app::config::AppResult;
-use crate::app::App;
+use crate::app::{App, AppMode};
+use crate::error::AppResult;
 use crate::event::EventHandler;
-use crate::ui;
+use crate::renderer;
+use crate::renderer::Renderer;
 use crossterm::event::{DisableMouseCapture, EnableMouseCapture};
 use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
 use ratatui::backend::Backend;
@@ -36,7 +37,19 @@ impl<B: Backend> Tui<B> {
     }
 
     pub fn draw(&mut self, app: &mut App) -> AppResult<()> {
-        self.terminal.draw(|frame| ui::render(app, frame))?;
+        let mode = app.mode.clone();
+        match mode {
+            AppMode::AddingContact => self
+                .terminal
+                .draw(|frame| Renderer::render_add_contact_modal(app, frame))?,
+            AppMode::DeletingContact => self
+                .terminal
+                .draw(|frame| Renderer::render_delete_confirmation_modal(app, frame))?,
+            _ => self
+                .terminal
+                .draw(|frame| Renderer::render_main_window(app, frame))?,
+        };
+
         crossterm::execute!(io::stderr(), app.get_cursor_style())?;
         Ok(())
     }

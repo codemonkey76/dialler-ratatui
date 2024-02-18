@@ -1,12 +1,12 @@
-use dialler_rs::app::config::AppResult;
 use dialler_rs::app::App;
+use dialler_rs::error::AppResult;
 use dialler_rs::event::EventHandler;
+
 use dialler_rs::tui::Tui;
 use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
 use std::io;
 use tracing::info;
-use tracing_subscriber::fmt::format::FmtSpan;
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
 #[tokio::main]

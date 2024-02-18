@@ -1,8 +1,7 @@
-use std::time::Duration;
-
-use crate::app::config::{AppResult, Error};
+use crate::error::{AppResult, Error};
 use crossterm::event::{Event as CrosstermEvent, KeyEvent, MouseEvent};
 use futures::{FutureExt, StreamExt};
+use std::time::Duration;
 use tokio::sync::mpsc;
 
 #[derive(Clone, Copy, Debug)]

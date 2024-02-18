@@ -1,5 +1,5 @@
-use crate::app::config::AppResult;
-use crate::contact::{Contact, ContactForUpdate};
+use crate::data_layer::contact::{Contact, ContactForUpdate};
+use crate::error::AppResult;
 use rusqlite::{params, Connection};
 use std::sync::{Arc, Mutex};
 use tracing::info;
@@ -33,7 +33,16 @@ impl Db {
     }
 
     pub fn update() {}
-    pub fn delete() {}
+    pub fn delete(&self, id: u64) -> AppResult<usize> {
+        let mut guard = self.conn.lock().unwrap();
+        if let Some(ref mut conn) = *guard {
+            let sql = "DELETE FROM contacts WHERE ID = ?";
+            let affected_rows = conn.execute(sql, params![id])?;
+            return Ok(affected_rows);
+        }
+
+        Ok(0)
+    }
     pub fn get() {}
     pub fn list(&self, filter: impl Into<String>) -> AppResult<Vec<Contact>> {
         info!("Listing contacts");
