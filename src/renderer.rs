@@ -3,19 +3,28 @@ use crate::dialog::dialog_field::DialogField;
 use ratatui::prelude::{
     Alignment, Color, Constraint, Direction, Layout, Line, Margin, Rect, Span, Style, Stylize,
 };
-use ratatui::widgets::{Block, BorderType, Borders, List, ListItem, Paragraph};
+use ratatui::widgets::{Block, BorderType, Borders, List, ListItem, Paragraph, Wrap};
 use ratatui::Frame;
 
 pub struct Renderer;
 
 impl Renderer {
+
+    pub fn render_edit_contact_modal(app: &mut App, frame: &mut Frame) {
+        Self::render_contact_modal("Edit Contact", app, frame);
+    }
+
     pub fn render_add_contact_modal(app: &mut App, frame: &mut Frame) {
+        Self::render_contact_modal("Add Contact", app, frame);
+    }
+
+    pub fn render_contact_modal(title: impl Into<String>, app: &mut App, frame: &mut Frame) {
         let size = frame.size();
 
         let center_area = get_center_area((40, 14), size);
 
         let centered_box = Block::default()
-            .title("Add Contact")
+            .title(title.into())
             .borders(Borders::ALL)
             .style(Style::default().fg(Color::Cyan).bg(Color::Black));
 
@@ -49,7 +58,13 @@ impl Renderer {
     pub fn render_delete_confirmation_modal(_: &mut App, frame: &mut Frame) {
         let size = frame.size();
 
-        let center_area = get_center_area((10, 5), size);
+        let center_area = get_center_area((25, 7), size);
+        let question_area = center_area.inner(&Margin::new(2, 2));
+        frame.render_widget(
+            Paragraph::new("Are you sure you want to delete this contact? (y/n)")
+                .wrap(Wrap::default()).style(Style::default().fg(Color::Cyan).bg(Color::Black)),
+            question_area
+        );
 
         frame.render_widget(
             Block::default().title("Delete?").borders(Borders::ALL),
@@ -126,6 +141,11 @@ impl Renderer {
             Span::styled(" <", reversed),
             Span::styled("d", red),
             Span::styled("> DELETE ", reversed),
+            Span::styled("", style),
+            Span::styled("", reversed),
+            Span::styled(" <", reversed),
+            Span::styled("c", red),
+            Span::styled("> CALL ", reversed),
             Span::styled("", style),
         ]);
 

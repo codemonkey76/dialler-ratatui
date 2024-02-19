@@ -3,6 +3,7 @@ use crate::error::AppResult;
 use crossterm::event::{KeyCode, KeyEvent};
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use tracing::info;
 
 #[derive(Debug, Default)]
 pub struct LineBuffer {
@@ -20,6 +21,12 @@ impl LineBuffer {
 
     pub fn clear(&mut self) {
         self.buffer.clear();
+    }
+
+    pub fn set_value(&mut self, value: impl Into<String>) {
+        let value = value.into();
+        info!("Setting linebuffer buffer: {:?}", value);
+        self.buffer = value;
     }
 
     pub fn handle_key_events(&mut self, event: KeyEvent, type_mode: TypingMode) -> AppResult<()> {

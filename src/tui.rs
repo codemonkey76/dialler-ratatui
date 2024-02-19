@@ -41,6 +41,9 @@ impl<B: Backend> Tui<B> {
             AppMode::AddingContact => self
                 .terminal
                 .draw(|frame| Renderer::render_add_contact_modal(app, frame))?,
+            AppMode::EditingContact => self
+                .terminal
+                .draw(|frame| Renderer::render_edit_contact_modal(app, frame))?,
             AppMode::DeletingContact => self
                 .terminal
                 .draw(|frame| Renderer::render_delete_confirmation_modal(app, frame))?,

@@ -37,6 +37,10 @@ impl DialogField {
         Ok(())
     }
 
+    pub fn set_value(&mut self, value: impl Into<String>) {
+        self.buffer.set_value(value.into());
+    }
+
     pub fn get_value(&self) -> &str {
         self.buffer.get_value()
     }

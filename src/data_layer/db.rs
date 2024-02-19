@@ -35,7 +35,28 @@ impl Db {
         Ok(0)
     }
 
-    pub fn update() {}
+    pub fn update(&self, id: u64, contact: ContactForUpdate) -> AppResult<usize> {
+        let mut guard = self.conn.lock().unwrap();
+        if let Some(ref mut conn) = *guard {
+            let sql = "UPDATE contacts SET first_name = ?, last_name = ?, phone_number = ?, company_name = ? WHERE id = ?";
+            let params = params![
+                contact.first_name,
+                contact.last_name,
+                contact.phone_number,
+                contact.company_name,
+                id
+            ];
+
+            let affected_rows = conn.execute(
+                sql,
+                params,
+            )?;
+
+            return Ok(affected_rows);
+        }
+
+        Ok(0)
+    }
     pub fn delete(&self, id: u64) -> AppResult<usize> {
         let mut guard = self.conn.lock().unwrap();
         if let Some(ref mut conn) = *guard {

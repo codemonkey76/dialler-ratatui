@@ -77,10 +77,6 @@ impl App {
         Ok(())
     }
 
-    pub fn add_contact(&mut self) {
-        self.mode = AppMode::AddingContact;
-    }
-
     pub fn insert_contact(&self) {
         info!("Running insert_contact");
         let db = Db::new(self.conn.clone());
@@ -102,9 +98,18 @@ impl App {
         let _ = db.delete(c.id);
     }
 
-    pub fn confirm_delete_contact(&mut self) {
-        self.mode = AppMode::DeletingContact;
+    pub fn update_contact(&self) {
+        let db = Db::new(self.conn.clone());
+        let c = &self.state.contacts[self.state.selected_contact_index];
+
+        let _ = db.update(c.id, ContactForUpdate {
+            first_name: Some(self.state.modal.fields[0].to_string()),
+            last_name: Some(self.state.modal.fields[1].to_string()),
+            phone_number: self.state.modal.fields[2].to_string(),
+            company_name: Some(self.state.modal.fields[3].to_string()),
+        });
     }
+
     pub fn call_selected_contact(&self) {
         let c = &self.state.contacts[self.state.selected_contact_index];
         info!("Calling \"{}\"", c.phone_number);
@@ -127,27 +132,40 @@ impl App {
         Ok(())
     }
 
+    pub fn load_edit_modal(&mut self) {
+        let c = &self.state.contacts[self.state.selected_contact_index];
+        let mut modal = Modal::add_contact();
+        modal.fields[0].set_value(c.first_name.clone().unwrap_or_default());
+        modal.fields[1].set_value(c.last_name.clone().unwrap_or_default());
+        modal.fields[2].set_value(c.phone_number.clone());
+        modal.fields[3].set_value(c.company_name.clone().unwrap_or_default());
+        self.state.modal = modal;
+    }
+
     pub fn handle_key_event(
         &mut self,
         key_event: KeyEvent,
         type_mode: TypingMode,
     ) -> AppResult<()> {
-        info!("Handling key event {:?}", key_event);
+
         match (key_event.modifiers, key_event.code) {
             (_, KeyCode::Esc) if self.mode == AppMode::Filtering => self.quit(),
             (KeyModifiers::CONTROL, KeyCode::Char(c)) => match c {
                 'q' => self.quit(),
                 'a' => {
-                    self.add_contact();
+                    self.mode = AppMode::AddingContact;
                 }
                 'c' => self.call_selected_contact(),
                 'd' => {
-
                     if (self.state.contacts.get(self.state.selected_contact_index)).is_some() {
-                        self.confirm_delete_contact();
+                        self.mode = AppMode::DeletingContact;
                     } else {
                         self.state.selected_contact_index = 0;
                     }
+                }
+                'e' => {
+                    self.load_edit_modal();
+                    self.mode = AppMode::EditingContact;
                 }
                 _ => {}
             },
@@ -188,6 +206,18 @@ impl App {
                         _ => {}
                     }
                 }
+                AppMode::EditingContact => {
+                    match self.state.modal.handle_key_events(key_event, type_mode)? {
+                        DialogResult::Ok => {
+                            self.update_contact();
+                            self.get_contacts()?;
+                            self.mode = AppMode::Filtering;
+                            self.state.modal.reset();
+                        }
+                        DialogResult::Cancel => self.mode = AppMode::Filtering,
+                        _ => {}
+                    }
+                }
                 AppMode::DeletingContact => match key_event.code {
                     KeyCode::Char('y') => {
                         info!("Deleting contact");
@@ -197,7 +227,6 @@ impl App {
                     }
                     _ => self.mode = AppMode::Filtering,
                 },
-                _ => {}
             },
         }
         Ok(())
