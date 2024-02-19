@@ -29,6 +29,13 @@ impl Modal {
         modal
     }
 
+    pub fn reset(&mut self) {
+        self.focused_index = 0;
+        for field in self.fields.iter_mut() {
+            field.reset();
+        }
+    }
+
     pub fn handle_key_events(
         &mut self,
         event: KeyEvent,

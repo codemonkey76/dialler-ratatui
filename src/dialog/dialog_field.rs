@@ -26,6 +26,11 @@ impl DialogField {
         }
     }
 
+    pub fn reset(&mut self) {
+        self.buffer.reset_cursor();
+        self.buffer.clear();
+    }
+
     pub fn handle_key_events(&mut self, event: KeyEvent, type_mode: TypingMode) -> AppResult<()> {
         self.buffer.handle_key_events(event, type_mode)?;
 

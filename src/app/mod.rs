@@ -182,6 +182,7 @@ impl App {
                             self.insert_contact();
                             self.get_contacts()?;
                             self.mode = AppMode::Filtering;
+                            self.state.modal.reset();
                         }
                         DialogResult::Cancel => self.mode = AppMode::Filtering,
                         _ => {}

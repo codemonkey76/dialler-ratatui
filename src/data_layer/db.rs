@@ -54,8 +54,9 @@ impl Db {
         if let Some(ref mut conn) = *guard {
             let mut sql = conn.prepare(
                 "
-                SELECT * FROM contacts 
-                WHERE first_name LIKE '%' || ?1 || '%' 
+                SELECT * FROM contacts
+                WHERE CAST(id AS TEXT) LIKE '%' || ?1 || '%'
+                OR first_name LIKE '%' || ?1 || '%'
                 OR last_name LIKE '%' || ?1 || '%' 
                 OR company_name LIKE '%' || ?1 || '%' 
                 OR phone_number LIKE '%' || ?1 || '%'

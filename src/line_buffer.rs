@@ -18,6 +18,10 @@ impl LineBuffer {
         &self.buffer
     }
 
+    pub fn clear(&mut self) {
+        self.buffer.clear();
+    }
+
     pub fn handle_key_events(&mut self, event: KeyEvent, type_mode: TypingMode) -> AppResult<()> {
         match event.code {
             KeyCode::Char(c) => {
@@ -126,7 +130,7 @@ impl LineBuffer {
         }
     }
 
-    fn reset_cursor(&mut self) {
+    pub fn reset_cursor(&mut self) {
         self.cursor_position = 0;
     }
 

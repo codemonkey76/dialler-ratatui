@@ -11,11 +11,16 @@ impl std::fmt::Display for Contact {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let first_name = self.first_name.as_deref().unwrap_or("N/A");
         let last_name = self.last_name.as_deref().unwrap_or("N/A");
-        let company = self.company_name.as_deref().unwrap_or("N/A");
+        let company = self.company_name.as_deref().unwrap_or("");
+        let company_display = if company.is_empty() {
+            "".to_string()
+        } else {
+            format!(" - {company}")
+        };
 
         write!(
             f,
-            "#{} - {first_name} {last_name} - {company} - {}",
+            "#{} - {first_name} {last_name}{company_display} - {}",
             self.id, self.phone_number
         )
     }
