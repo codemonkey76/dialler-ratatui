@@ -1,6 +1,6 @@
 [package]
 name = "dialler-rs"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Shane Poppleton <shane@bjja.com.au>"]
 description = "A simple dialler / contact manager for the terminal"
 repository = "https://github.com/codemonkey76/dialler-rs"
