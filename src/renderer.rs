@@ -3,8 +3,9 @@ use crate::dialog::dialog_field::DialogField;
 use ratatui::prelude::{
     Alignment, Color, Constraint, Direction, Layout, Line, Margin, Rect, Span, Style, Stylize,
 };
-use ratatui::widgets::{Block, BorderType, Borders, List, ListItem, Paragraph, Wrap};
+use ratatui::widgets::{Block, BorderType, Borders, List, ListItem, Paragraph, Wrap, ScrollbarOrientation, Scrollbar, ScrollbarState, ListState};
 use ratatui::Frame;
+use ratatui::symbols::scrollbar;
 use tracing::info;
 
 pub struct Renderer;
@@ -130,17 +131,29 @@ impl Renderer {
 
         let block_style = Style::default().fg(Color::Cyan).bg(Color::Black);
 
-        frame.render_widget(
+        let [contact_area, scrollbar] = Layout::default().direction(Direction::Horizontal).constraints([
+            Constraint::Min(0),
+            Constraint::Length(1),
+        ]).areas(contact_area);
+
+        let mut list_state = ListState::default();
+        list_state.select(Some(app.state.selected_contact_index));
+        frame.render_stateful_widget(
             List::new(items)
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
                         .border_type(BorderType::Rounded)
-                        .title(" Contact Area"),
+                        .title(" Contacts"),
                 )
                 .style(block_style),
             contact_area,
+            &mut list_state,
         );
+        let mut state = ScrollbarState::new(app.state.contacts.len());
+        state = state.position(app.state.selected_contact_index);
+
+        frame.render_stateful_widget(Scrollbar::default().orientation(ScrollbarOrientation::VerticalRight).symbols(scrollbar::VERTICAL), scrollbar, &mut state);
 
         let mut spans = vec![Span::styled("Ctrl + ", Style::default().fg(Color::Gray).bg(Color::Black).bold())];
 
