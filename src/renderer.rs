@@ -5,6 +5,7 @@ use ratatui::prelude::{
 };
 use ratatui::widgets::{Block, BorderType, Borders, List, ListItem, Paragraph, Wrap};
 use ratatui::Frame;
+use tracing::info;
 
 pub struct Renderer;
 
@@ -59,16 +60,32 @@ impl Renderer {
         let size = frame.size();
 
         let center_area = get_center_area((25, 7), size);
-        let question_area = center_area.inner(&Margin::new(2, 2));
-        frame.render_widget(
-            Paragraph::new("Are you sure you want to delete this contact? (y/n)")
-                .wrap(Wrap::default()).style(Style::default().fg(Color::Cyan).bg(Color::Black)),
-            question_area
-        );
 
         frame.render_widget(
-            Block::default().title("Delete?").borders(Borders::ALL),
+            Block::default().title("Delete?").borders(Borders::ALL).style(
+                Style::default().fg(Color::Red).bg(Color::Black),
+            ),
             center_area,
+        );
+
+        let style = Style::default().fg(Color::Gray).bg(Color::Black);
+        let red = style.fg(Color::Red);
+        let white = style.fg(Color::White);
+
+        let line = Line::from(vec![
+            Span::styled("Are you sure you want to delete this contact? (", style),
+            Span::styled("y", red),
+            Span::styled("/", style),
+            Span::styled("n", white),
+            Span::styled(")", style),
+
+        ]);
+
+        let question_area = center_area.inner(&Margin::new(2, 2));
+        frame.render_widget(
+            Paragraph::new(line)
+                .wrap(Wrap::default()),
+            question_area
         );
     }
 
@@ -99,9 +116,15 @@ impl Renderer {
             ])
             .areas(frame.size());
 
+        let [status_area, quit_message] = Layout::default().direction(Direction::Horizontal).constraints([
+            Constraint::Min(0),
+            Constraint::Length(10),
+        ]).areas(status_area);
+
+
         frame.render_widget(
             Paragraph::new(format!(" Filter: {}", app.state.filter))
-                .style(Style::default().fg(Color::Cyan).bg(Color::Black)),
+                .style(Style::default().fg(Color::Magenta).bg(Color::Black)),
             filter_area,
         );
 
@@ -119,37 +142,25 @@ impl Renderer {
             contact_area,
         );
 
-        let style = Style::default().fg(Color::Gray).bg(Color::Black).bold();
-        let cyan = Style::default().fg(Color::Gray).bg(Color::Gray).bold();
-        let reversed = Style::default().fg(Color::Black).bg(Color::Gray).bold();
-        let red = Style::default().fg(Color::Red).bg(Color::Gray).bold();
+        let mut spans = vec![Span::styled("Ctrl + ", Style::default().fg(Color::Gray).bg(Color::Black).bold())];
 
-        let line = Line::from(vec![
-            Span::styled("Ctrl + ", style.bold()),
-            Span::styled("", reversed),
-            Span::styled("", cyan),
-            Span::styled("<", reversed),
-            Span::styled("a", red),
-            Span::styled("> ADD ", reversed),
-            Span::styled("", style),
-            Span::styled("", reversed),
-            Span::styled(" <", reversed),
-            Span::styled("e", red),
-            Span::styled("> EDIT ", reversed),
-            Span::styled("", style),
-            Span::styled("", reversed),
-            Span::styled(" <", reversed),
-            Span::styled("d", red),
-            Span::styled("> DELETE ", reversed),
-            Span::styled("", style),
-            Span::styled("", reversed),
-            Span::styled(" <", reversed),
-            Span::styled("c", red),
-            Span::styled("> CALL ", reversed),
-            Span::styled("", style),
-        ]);
+        let mut include_text = true;
+        if status_area.width < 58 {
+            include_text = false;
+        }
+
+        spans.extend(construct_span("Add", 'a', include_text));
+        spans.extend(construct_span("Edit", 'e', include_text));
+        spans.extend(construct_span("Delete", 'd', include_text));
+        spans.extend(construct_span("Call", 'c', include_text));
+
+        let line = Line::from(spans);
+
+        info!("status_width: {}", status_area.width);
+
 
         frame.render_widget(Paragraph::new(line), status_area);
+        frame.render_widget(Paragraph::new("ESC = Quit"), quit_message);
         frame.set_cursor(
             filter_area.x + app.state.filter.get_cursor_position() as u16 + 9,
             filter_area.y,
@@ -182,6 +193,26 @@ fn get_center_area(dimensions: (u16, u16), size: Rect) -> Rect {
     areas[1]
 }
 
+fn construct_span(text: &str, short_code: char, include_text: bool) -> Vec<Span>{
+    let mut spans = vec![];
+    let style = Style::default().fg(Color::Gray).bg(Color::Black).bold();
+
+    let gray = style.bg(Color::Gray);
+    let reversed = gray.fg(Color::Black);
+    let red = gray.fg(Color::Red);
+
+    spans.push(Span::styled("", reversed));
+    spans.push(Span::styled("", gray));
+    spans.push(Span::styled("<", reversed));
+    spans.push(Span::styled(short_code.to_string(), red));
+    spans.push(Span::styled("> ", reversed));
+    if include_text {
+        spans.push(Span::styled(format!("{text} "), reversed));
+    }
+    spans.push(Span::styled("", style));
+
+    spans
+}
 
 fn draw_field_in_rect(frame: &mut Frame, field: &DialogField, label_area: Rect, input_area: Rect) {
     let value = field.get_value();
