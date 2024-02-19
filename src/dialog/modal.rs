@@ -3,7 +3,6 @@ use crate::dialog::dialog_field::DialogField;
 
 use crate::error::AppResult;
 use crossterm::event::{KeyCode, KeyEvent};
-use std::fmt::{Display, Formatter};
 use tracing::info;
 
 #[derive(Default, Debug)]
@@ -24,8 +23,8 @@ impl Modal {
         let mut modal = Modal::default();
         modal.fields.push(DialogField::new("first", "First Name"));
         modal.fields.push(DialogField::new("last", "Last Name"));
-        modal.fields.push(DialogField::new("company", "Company"));
         modal.fields.push(DialogField::new("phone", "Phone Number"));
+        modal.fields.push(DialogField::new("company", "Company"));
 
         modal
     }

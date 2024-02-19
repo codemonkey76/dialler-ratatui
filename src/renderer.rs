@@ -1,7 +1,7 @@
 use crate::app::App;
 use crate::dialog::dialog_field::DialogField;
 use ratatui::prelude::{
-    Alignment, Color, Constraint, Direction, Layout, Line, Margin, Rect, Span, Style, Stylize, Text,
+    Alignment, Color, Constraint, Direction, Layout, Line, Margin, Rect, Span, Style, Stylize,
 };
 use ratatui::widgets::{Block, BorderType, Borders, List, ListItem, Paragraph};
 use ratatui::Frame;
@@ -46,7 +46,7 @@ impl Renderer {
         );
     }
 
-    pub fn render_delete_confirmation_modal(app: &mut App, frame: &mut Frame) {
+    pub fn render_delete_confirmation_modal(_: &mut App, frame: &mut Frame) {
         let size = frame.size();
 
         let center_area = get_center_area((10, 5), size);
@@ -90,6 +90,8 @@ impl Renderer {
             filter_area,
         );
 
+        let block_style = Style::default().fg(Color::Cyan).bg(Color::Black);
+
         frame.render_widget(
             List::new(items)
                 .block(
@@ -98,7 +100,7 @@ impl Renderer {
                         .border_type(BorderType::Rounded)
                         .title(" Contact Area"),
                 )
-                .style(Style::default().fg(Color::Cyan).bg(Color::Black)),
+                .style(block_style),
             contact_area,
         );
 
@@ -160,18 +162,6 @@ fn get_center_area(dimensions: (u16, u16), size: Rect) -> Rect {
     areas[1]
 }
 
-fn get_middle_split(direction: Direction, dimensions: (u16, u16, u16), size: Rect) -> Rect {
-    let areas = Layout::default()
-        .direction(direction)
-        .constraints([
-            Constraint::Length(dimensions.0),
-            Constraint::Min(dimensions.1),
-            Constraint::Length(dimensions.2),
-        ])
-        .split(size);
-
-    areas[1]
-}
 
 fn draw_field_in_rect(frame: &mut Frame, field: &DialogField, label_area: Rect, input_area: Rect) {
     let value = field.get_value();
@@ -181,10 +171,9 @@ fn draw_field_in_rect(frame: &mut Frame, field: &DialogField, label_area: Rect, 
             .alignment(Alignment::Right),
         label_area,
     );
-    let mut style = Style::default();
 
     frame.render_widget(
-        Paragraph::new(format!("{}", value))
+        Paragraph::new(value.to_string())
             .style(Style::default().fg(Color::Cyan).bg(Color::Black)),
         input_area,
     );

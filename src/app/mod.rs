@@ -42,13 +42,16 @@ impl Default for App {
 
 impl App {
     pub fn new() -> AppResult<Self> {
+
         let conn = Arc::new(Mutex::new(Some(Config::create_db()?)));
+
         let modal = Modal::add_contact();
         let state = AppState {
             focus: AppFocus::Filter,
             selected_contact_index: 0,
             filter: Default::default(),
             contacts: vec![],
+            config: Config::new()?,
             modal,
         };
         Ok(Self {
@@ -69,6 +72,7 @@ impl App {
     pub fn get_contacts(&mut self) -> AppResult<()> {
         let db = Db::new(self.conn.clone());
         self.state.contacts = db.list(self.state.filter.to_string())?;
+        self.state.selected_contact_index = 0;
 
         Ok(())
     }
@@ -84,8 +88,8 @@ impl App {
         let c = ContactForUpdate {
             first_name: Some(self.state.modal.fields[0].to_string()),
             last_name: Some(self.state.modal.fields[1].to_string()),
-            company_name: Some(self.state.modal.fields[2].to_string()),
-            phone_number: self.state.modal.fields[3].to_string(),
+            phone_number: self.state.modal.fields[2].to_string(),
+            company_name: Some(self.state.modal.fields[3].to_string()),
         };
 
         let _ = db.insert(c);
@@ -101,7 +105,13 @@ impl App {
     pub fn confirm_delete_contact(&mut self) {
         self.mode = AppMode::DeletingContact;
     }
-
+    pub fn call_selected_contact(&self) {
+        let c = &self.state.contacts[self.state.selected_contact_index];
+        info!("Calling \"{}\"", c.phone_number);
+        let _ = std::process::Command::new(&self.state.config.dialler_program)
+            .arg(c.phone_number.replace(' ', ""))
+            .spawn();
+    }
     pub fn handle_event(&mut self, event: Event) -> AppResult<()> {
         match event {
             Event::Tick => self.tick()?,
@@ -130,8 +140,14 @@ impl App {
                 'a' => {
                     self.add_contact();
                 }
+                'c' => self.call_selected_contact(),
                 'd' => {
-                    self.confirm_delete_contact();
+
+                    if (self.state.contacts.get(self.state.selected_contact_index)).is_some() {
+                        self.confirm_delete_contact();
+                    } else {
+                        self.state.selected_contact_index = 0;
+                    }
                 }
                 _ => {}
             },
@@ -201,6 +217,7 @@ pub struct AppState {
     pub selected_contact_index: usize,
     pub filter: LineBuffer,
     pub contacts: Vec<Contact>,
+    pub config: Config,
     pub modal: Modal,
 }
 

@@ -3,9 +3,17 @@ use directories::ProjectDirs;
 use rusqlite::Connection;
 use std::path::PathBuf;
 
-pub struct Config;
+#[derive(Debug, Default)]
+pub struct Config {
+    pub dialler_program: String
+}
 
 impl Config {
+    pub fn new() -> AppResult<Self> {
+        let dialler_program = std::env::var("DIALLER_PROGRAM").unwrap_or_else(|_| "dialler".to_string());
+        Ok(Self { dialler_program })
+    }
+
     fn get_config_file(file: &str) -> AppResult<PathBuf> {
         Ok(ProjectDirs::from("com", "Shane Poppleton", "Dialler")
             .ok_or(Error::ConfigError(

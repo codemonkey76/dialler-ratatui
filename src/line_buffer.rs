@@ -7,8 +7,8 @@ use std::fmt::{Display, Formatter};
 #[derive(Debug, Default)]
 pub struct LineBuffer {
     buffer: String,
-    max_buffer: usize,
-    display_buffer: usize,
+    _max_buffer: usize,
+    _display_buffer: usize,
     cursor_position: usize,
     pub updated: bool,
 }

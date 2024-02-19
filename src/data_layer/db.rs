@@ -17,15 +17,18 @@ impl Db {
         let mut guard = self.conn.lock().unwrap();
         if let Some(ref mut conn) = *guard {
             let sql = "INSERT INTO contacts (first_name, last_name, phone_number, company_name) VALUES (?, ?, ?, ?)";
-            let affected_rows = conn.execute(
-                sql,
-                params![
+            let params = params![
                     contact.first_name,
                     contact.last_name,
                     contact.phone_number,
                     contact.company_name
-                ],
+            ];
+
+            let affected_rows = conn.execute(
+                sql,
+                params,
             )?;
+
             return Ok(affected_rows);
         }
 
@@ -65,11 +68,10 @@ impl Db {
                         id: row.get(0)?,
                         first_name: row.get(1)?,
                         last_name: row.get(2)?,
-                        company_name: row.get(3)?,
-                        phone_number: row.get(4)?,
+                        phone_number: row.get(3)?,
+                        company_name: row.get(4)?,
                     })
                 })?
-                .into_iter()
                 .filter_map(Result::ok)
                 .collect();
 

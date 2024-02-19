@@ -1,7 +1,6 @@
 use crate::app::{App, AppMode};
 use crate::error::AppResult;
 use crate::event::EventHandler;
-use crate::renderer;
 use crate::renderer::Renderer;
 use crossterm::event::{DisableMouseCapture, EnableMouseCapture};
 use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
